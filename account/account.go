@@ -3,6 +3,7 @@ package account
 import (
 	"crypto"
 	"crypto/rand"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/configuration"
@@ -19,6 +20,8 @@ type Account struct {
 	Key          string
 	DirectoryURL string
 	Owners       []string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // Contacts generates a list of mail contacts from the
@@ -50,6 +53,8 @@ func NewAccountWithKey(key string, owners ...string) (*Account, error) {
 		Key:          key,
 		DirectoryURL: configuration.StagingDirectory,
 		Owners:       owners,
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
 	if key == "" {

@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/account"
 )
@@ -30,15 +32,26 @@ const (
 type Domain struct {
 	ID               uuid.UUID
 	Name             string
+	ChallengeType    string
 	AuthorizationURL string
 	State            State
 	Account          *account.Account
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // NewDomain initializes a new domain.
 func NewDomain(account *account.Account, name string) *Domain {
+	return NewDomainWithChallengeType(account, name, defaultChallengeType)
+}
+
+// NewDomainWithChallengeType initializes a new domain.
+func NewDomainWithChallengeType(account *account.Account, name, challengeType string) *Domain {
 	return &Domain{
-		Account: account,
-		Name:    name,
+		Account:       account,
+		Name:          name,
+		ChallengeType: challengeType,
+		CreatedAt:     time.Now(),
+		UpdatedAt:     time.Now(),
 	}
 }
