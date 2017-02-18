@@ -12,23 +12,26 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type Suite struct {
+type testSuite struct {
 	suite.Suite
 	bucket Bucket
 }
 
-func (s *Suite) TestSaveAccount() {
-	a := account.NewAccount("david.calavera@gmail.com")
+func (s *testSuite) TestSaveAccount() {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), a.ID)
 	require.NotEmpty(s.T(), a.Token)
 
-	err := s.bucket.SaveAccount(a)
+	err = s.bucket.SaveAccount(a)
 	require.NoError(s.T(), err)
 }
 
-func (s *Suite) TestGetAccount() {
-	a := account.NewAccount("david.calavera@gmail.com")
-	err := s.bucket.SaveAccount(a)
+func (s *testSuite) TestGetAccount() {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(s.T(), err)
+
+	err = s.bucket.SaveAccount(a)
 	require.NoError(s.T(), err)
 
 	acc, err := s.bucket.GetAccount(a.ID, a.Token)
@@ -53,5 +56,5 @@ func TestBoltBucket(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	suite.Run(t, &Suite{bucket: b})
+	suite.Run(t, &testSuite{bucket: b})
 }

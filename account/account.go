@@ -1,9 +1,14 @@
 package account
 
 import (
+	"crypto"
+	"crypto/rand"
+
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/configuration"
 )
+
+var rander = rand.Reader
 
 // Account stores information
 // about a registered account that
@@ -11,24 +16,55 @@ import (
 type Account struct {
 	ID           uuid.UUID
 	Token        uuid.UUID
-	Certificate  string
+	Key          string
 	DirectoryURL string
 	Owners       []string
 }
 
-// NewAccount initializes a new account for a set of owners.
-func NewAccount(owners ...string) *Account {
-	return NewAccountWithCertificate("", owners...)
+// Contacts generates a list of mail contacts from the
+// account owners.
+func (a *Account) Contacts() []string {
+	contacts := make([]string, len(a.Owners))
+	for i, o := range a.Owners {
+		contacts[i] = "mailto:" + o
+	}
+	return contacts
 }
 
-// NewAccountWithCertificate initializes a new account for a set of owners
+// PrivateKey returns the account's private key.
+func (a *Account) PrivateKey() (crypto.Signer, error) {
+	return extractPEMSigner(a.Key)
+}
+
+// NewAccount initializes a new account for a set of owners.
+func NewAccount(owners ...string) (*Account, error) {
+	return NewAccountWithKey("", owners...)
+}
+
+// NewAccountWithKey initializes a new account for a set of owners
 // with an existent certificate.
-func NewAccountWithCertificate(certificate string, owners ...string) *Account {
-	return &Account{
+func NewAccountWithKey(key string, owners ...string) (*Account, error) {
+	account := &Account{
 		ID:           uuid.New(),
 		Token:        uuid.New(),
-		Certificate:  certificate,
+		Key:          key,
 		DirectoryURL: configuration.StagingDirectory,
 		Owners:       owners,
 	}
+
+	if key == "" {
+		b, err := generatePEM()
+		if err != nil {
+			return nil, err
+		}
+		account.Key = string(b)
+	} else {
+		_, err := extractPEMSigner(key)
+		if err != nil {
+			return nil, err
+		}
+		account.Key = key
+	}
+
+	return account, nil
 }
