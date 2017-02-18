@@ -19,7 +19,9 @@ func (s testSuite) TestRegisterAccount() {
 	require.NoError(s.T(), err)
 	a.DirectoryURL = s.directoryURL
 
-	err = RegisterAccount(a)
+	c, err := NewClient(a)
+	require.NoError(s.T(), err)
+	err = c.Register()
 	require.NoError(s.T(), err)
 }
 

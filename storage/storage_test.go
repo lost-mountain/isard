@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/account"
+	"github.com/lost-mountain/isard/domain"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -15,16 +16,6 @@ import (
 type testSuite struct {
 	suite.Suite
 	bucket Bucket
-}
-
-func (s *testSuite) TestSaveAccount() {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(s.T(), err)
-	require.NotEmpty(s.T(), a.ID)
-	require.NotEmpty(s.T(), a.Token)
-
-	err = s.bucket.SaveAccount(a)
-	require.NoError(s.T(), err)
 }
 
 func (s *testSuite) TestGetAccount() {
@@ -40,7 +31,44 @@ func (s *testSuite) TestGetAccount() {
 
 	acc, err = s.bucket.GetAccount(a.ID, uuid.New())
 	require.Nil(s.T(), acc)
-	require.Error(s.T(), err, "unable to get account with a fake token")
+	require.Error(s.T(), err, "unable to get account with invalid token")
+}
+
+func (s *testSuite) TestGetDomain() {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), a.ID)
+
+	d := domain.NewDomain(a, "example.com")
+	err = s.bucket.SaveDomain(d)
+	require.NoError(s.T(), err)
+
+	dom, err := s.bucket.GetDomain(a, "example.com")
+	require.NoError(s.T(), err)
+	require.Equal(s.T(), d.ID, dom.ID)
+
+	_, err = s.bucket.GetDomain(a, "foobar.com")
+	require.Error(s.T(), err, "unable to get domain with missing name")
+}
+
+func (s *testSuite) TestSaveAccount() {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), a.ID)
+	require.NotEmpty(s.T(), a.Token)
+
+	err = s.bucket.SaveAccount(a)
+	require.NoError(s.T(), err)
+}
+
+func (s *testSuite) TestSaveDomain() {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), a.ID)
+
+	d := domain.NewDomain(a, "example.com")
+	err = s.bucket.SaveDomain(d)
+	require.NoError(s.T(), err)
 }
 
 func TestBoltBucket(t *testing.T) {

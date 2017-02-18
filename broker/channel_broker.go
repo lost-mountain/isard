@@ -2,18 +2,23 @@ package broker
 
 import "github.com/google/uuid"
 
+type topicMessage struct {
+	Topic string
+	*Message
+}
+
 // ChannelBroker implements broker.Broker using a channel as a backend.
 // This interface is only suitable for testing.
 // It offers no guarantees about the elements pushed and pulled from the queue.
 type ChannelBroker struct {
-	c chan *Message
+	c chan *topicMessage
 	e chan struct{}
 }
 
 // NewChannelBroker initializes the channel broker.
 func NewChannelBroker() *ChannelBroker {
 	return &ChannelBroker{
-		c: make(chan *Message),
+		c: make(chan *topicMessage),
 	}
 }
 
@@ -25,8 +30,9 @@ func (b *ChannelBroker) Close() error {
 }
 
 // Publish sends messages to the channel for a specific job.
-func (b *ChannelBroker) Publish(payload interface{}) error {
-	b.c <- NewMessage(uuid.New(), payload)
+func (b *ChannelBroker) Publish(topic string, payload interface{}) error {
+	m := NewMessage(uuid.New(), payload)
+	b.c <- &topicMessage{topic, m}
 	return nil
 }
 
@@ -36,7 +42,7 @@ func (b *ChannelBroker) Subscribe(processor Processor) {
 		for {
 			select {
 			case msg := <-b.c:
-				go processor(msg)
+				go processor(msg.Message)
 			case <-b.e:
 				break
 			}

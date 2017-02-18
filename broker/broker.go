@@ -8,6 +8,6 @@ type Processor func(message *Message) error
 // messages in a queue and subscribe to them.
 type Broker interface {
 	Close() error
-	Publish(payload interface{}) error
+	Publish(topic string, payload interface{}) error
 	Subscribe(processor Processor) error
 }
