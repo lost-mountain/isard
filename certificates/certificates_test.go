@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/lost-mountain/isard/account"
+	"github.com/lost-mountain/isard/domain"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -15,14 +16,33 @@ type testSuite struct {
 }
 
 func (s testSuite) TestRegisterAccount() {
+	c := s.newClient()
+
+	err := c.Register()
+	require.NoError(s.T(), err)
+}
+
+func (s testSuite) TestAuthorizeDomain() {
+	c := s.newClient()
+	d := domain.NewDomain(c.account, "example.com")
+
+	err := c.Register()
+	require.NoError(s.T(), err)
+
+	authz, err := c.AuthorizeDomain(d)
+	require.NoError(s.T(), err)
+	require.NotNil(s.T(), authz.URI)
+}
+
+func (s testSuite) newClient() *Client {
 	a, err := account.NewAccount("david.calavera@gmail.com")
 	require.NoError(s.T(), err)
 	a.DirectoryURL = s.directoryURL
 
 	c, err := NewClient(a)
 	require.NoError(s.T(), err)
-	err = c.Register()
-	require.NoError(s.T(), err)
+
+	return c
 }
 
 func TestCertificates(t *testing.T) {

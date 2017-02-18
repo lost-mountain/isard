@@ -2,12 +2,10 @@ package certificates
 
 import (
 	"context"
-	"crypto"
-	"crypto/rand"
-	"crypto/x509"
-	"crypto/x509/pkix"
 
 	"github.com/lost-mountain/isard/account"
+	"github.com/lost-mountain/isard/domain"
+	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/acme"
 )
@@ -47,10 +45,20 @@ func (c *Client) Register() error {
 	return err
 }
 
-func certRequest(key crypto.Signer, domain string) ([]byte, error) {
-	req := &x509.CertificateRequest{
-		Subject:  pkix.Name{CommonName: domain},
-		DNSNames: []string{domain},
+// AuthorizeDomain initiates a domain name registration
+// by sending the initial authorization.
+func (c *Client) AuthorizeDomain(d *domain.Domain) (*acme.Authorization, error) {
+	ctx := context.Background()
+	return c.client.Authorize(ctx, d.Name)
+}
+
+// AcceptChallenge decides which challenge to use for a domain and uses
+// the right resolver to accept the challenge.
+func (c *Client) AcceptChallenge(d *domain.Domain, challenge *acme.Challenge) error {
+	ctx := context.Background()
+	_, err := c.client.Accept(ctx, challenge)
+	if err != nil {
+		return errors.Wrapf(err, "error accepting challenge for domain: %s", d.Name)
 	}
-	return x509.CreateCertificateRequest(rand.Reader, req, key)
+	return nil
 }

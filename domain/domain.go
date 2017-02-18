@@ -24,6 +24,8 @@ const (
 	Issued
 	// Cancelled is the state of a domain after the certificate has been cancelled.
 	Cancelled
+
+	defaultChallengeType = "http-01"
 )
 
 // Domain stores information
