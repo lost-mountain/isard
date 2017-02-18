@@ -6,6 +6,9 @@ import (
 
 	"golang.org/x/crypto/acme"
 
+	"github.com/lost-mountain/isard/account"
+	"github.com/lost-mountain/isard/domain"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -14,10 +17,42 @@ type dnsTestSuite struct {
 	resolver *DNSResolver
 }
 
-func (s *dnsTestSuite) TestResolve() {
+func (s *dnsTestSuite) TearDownSuite() {
+	s.resolver.ns1Client.Zones.Delete("beta.cabal.io")
 }
 
-func (s *dnsTestSuite) TestCleanup() {
+func (s *dnsTestSuite) TestResolveAndCleanup() {
+	d := &domain.Domain{
+		Name: "cabal.io",
+	}
+
+	chal := &acme.Challenge{
+		Type:  "dns-01",
+		Token: "123==",
+	}
+
+	err := s.resolver.Resolve(d, chal)
+	require.NoError(s.T(), err)
+
+	err = s.resolver.Cleanup(d)
+	require.NoError(s.T(), err)
+}
+
+func (s *dnsTestSuite) TestResolveAndCleanupWithMissingZone() {
+	d := &domain.Domain{
+		Name: "beta.cabal.io",
+	}
+
+	chal := &acme.Challenge{
+		Type:  "dns-01",
+		Token: "123==",
+	}
+
+	err := s.resolver.Resolve(d, chal)
+	require.NoError(s.T(), err)
+
+	err = s.resolver.Cleanup(d)
+	require.NoError(s.T(), err)
 }
 
 func TestDNSResolver(t *testing.T) {
@@ -27,7 +62,17 @@ func TestDNSResolver(t *testing.T) {
 Set ISARD_TEST_NS1_API_KEY with the NS1 api key to enable them`)
 	}
 
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(t, err)
+
+	pk, err := a.PrivateKey()
+	require.NoError(t, err)
+
+	c := &acme.Client{
+		Key: pk,
+	}
+
 	suite.Run(t, &dnsTestSuite{
-		resolver: NewDNSResolver(apiKey, &acme.Client{}),
+		resolver: NewDNSResolver(apiKey, c),
 	})
 }

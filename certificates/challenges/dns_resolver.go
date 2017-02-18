@@ -1,6 +1,7 @@
 package challenges
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -19,13 +20,14 @@ type DNSResolver struct {
 }
 
 // Cleanup removes the TXT record from the domain zone.
-func (r *DNSResolver) Cleanup(d *domain.Domain, keyAuth string) error {
+func (r *DNSResolver) Cleanup(d *domain.Domain) error {
 	zone, err := r.getHostedZone(d.Name)
 	if err != nil {
 		return err
 	}
 
-	_, err = r.ns1Client.Records.Delete(zone.Zone, d.Name, "TXT")
+	name := recordName(d.Name)
+	_, err = r.ns1Client.Records.Delete(zone.Zone, name, "TXT")
 	return errors.Wrapf(err, "error removing DNS record for domain challenge: %s", d.Name)
 }
 
@@ -65,18 +67,20 @@ func NewDNSResolver(key string, ac *acme.Client) *DNSResolver {
 func (r *DNSResolver) getHostedZone(domain string) (*dns.Zone, error) {
 	zone, _, err := r.ns1Client.Zones.Get(domain)
 	if err != nil {
-		if err == rest.ErrZoneMissing {
-			_, cerr := r.ns1Client.Zones.Create(&dns.Zone{Zone: domain})
-			if cerr != nil {
-				return nil, cerr
-			}
-
-			zone, _, err = r.ns1Client.Zones.Get(domain)
-			if err != nil {
-				return nil, err
-			}
+		if err != rest.ErrZoneMissing {
+			return nil, err
 		}
-		return nil, err
+
+		_, err = r.ns1Client.Zones.Create(&dns.Zone{Zone: domain})
+		if err != nil {
+			return nil, err
+		}
+
+		zone, _, err = r.ns1Client.Zones.Get(domain)
+		fmt.Println(zone)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return zone, nil
@@ -86,9 +90,13 @@ func (r *DNSResolver) newTxtRecord(zone *dns.Zone, domain, value string) *dns.Re
 	return &dns.Record{
 		Type:   "TXT",
 		Zone:   zone.Zone,
-		Domain: domain,
+		Domain: recordName(domain),
 		Answers: []*dns.Answer{
 			{Rdata: []string{value}},
 		},
 	}
+}
+
+func recordName(domain string) string {
+	return fmt.Sprintf("_acme-challenge.%s", domain)
 }
