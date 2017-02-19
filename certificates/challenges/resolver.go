@@ -7,6 +7,6 @@ import (
 
 // Resolver decides how to act upon an ACME challenge.
 type Resolver interface {
-	Cleanup(d *domain.Domain, keyAuth string) error
-	Resolve(d *domain.Domain, chal *acme.Challenge) error
+	Cleanup(d *domain.Domain) error
+	Resolve(d *domain.Domain, chal *acme.Challenge) (*domain.Domain, error)
 }

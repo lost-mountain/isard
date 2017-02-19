@@ -18,7 +18,7 @@ type dnsTestSuite struct {
 }
 
 func (s *dnsTestSuite) TearDownSuite() {
-	s.resolver.ns1Client.Zones.Delete("beta.cabal.io")
+	s.resolver.ns1Client.Zones.Delete("test-dns-isard.cabal.io")
 }
 
 func (s *dnsTestSuite) TestResolveAndCleanup() {
@@ -31,7 +31,7 @@ func (s *dnsTestSuite) TestResolveAndCleanup() {
 		Token: "123==",
 	}
 
-	err := s.resolver.Resolve(d, chal)
+	_, err := s.resolver.Resolve(d, chal)
 	require.NoError(s.T(), err)
 
 	err = s.resolver.Cleanup(d)
@@ -40,7 +40,7 @@ func (s *dnsTestSuite) TestResolveAndCleanup() {
 
 func (s *dnsTestSuite) TestResolveAndCleanupWithMissingZone() {
 	d := &domain.Domain{
-		Name: "beta.cabal.io",
+		Name: "test-dns-isard.cabal.io",
 	}
 
 	chal := &acme.Challenge{
@@ -48,7 +48,7 @@ func (s *dnsTestSuite) TestResolveAndCleanupWithMissingZone() {
 		Token: "123==",
 	}
 
-	err := s.resolver.Resolve(d, chal)
+	_, err := s.resolver.Resolve(d, chal)
 	require.NoError(s.T(), err)
 
 	err = s.resolver.Cleanup(d)

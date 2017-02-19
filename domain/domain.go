@@ -32,14 +32,16 @@ const (
 // about a registered domain
 // and its certificate authority.
 type Domain struct {
-	ID               uuid.UUID
-	Name             string
-	ChallengeType    string
-	AuthorizationURL string
-	State            State
-	Account          *account.Account
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	ID                      uuid.UUID
+	Name                    string
+	ChallengeType           string
+	AuthorizationURL        string
+	State                   State
+	Account                 *account.Account
+	CreatedAt               time.Time
+	UpdatedAt               time.Time
+	HTTP01ChallengePath     string
+	HTTP01ChallengeResponse string
 }
 
 // NewDomain initializes a new domain.

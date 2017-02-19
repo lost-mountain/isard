@@ -33,35 +33,24 @@ func (r *DNSResolver) Cleanup(d *domain.Domain) error {
 
 // Resolve uses the NS1 API to setup a TXT record
 // for the ACME challenge.
-func (r *DNSResolver) Resolve(d *domain.Domain, challenge *acme.Challenge) error {
+func (r *DNSResolver) Resolve(d *domain.Domain, challenge *acme.Challenge) (*domain.Domain, error) {
 	value, err := r.acmeClient.DNS01ChallengeRecord(challenge.Token)
 	if err != nil {
-		return errors.Wrapf(err, "error getting the DNS challenge record for %s", d.Name)
+		return nil, errors.Wrapf(err, "error getting the DNS challenge record for %s", d.Name)
 	}
 
 	zone, err := r.getHostedZone(d.Name)
 	if err != nil {
-		return errors.Wrapf(err, "error getting the hosted zone for domain: %s", d.Name)
+		return nil, errors.Wrapf(err, "error getting the hosted zone for domain: %s", d.Name)
 	}
 
 	record := r.newTxtRecord(zone, d.Name, value)
 	_, err = r.ns1Client.Records.Create(record)
 	if err != nil && err != rest.ErrRecordExists {
-		return errors.Wrapf(err, "error creating DNS record for domain challenge: %s", d.Name)
+		return nil, errors.Wrapf(err, "error creating DNS record for domain challenge: %s", d.Name)
 	}
 
-	return nil
-}
-
-// NewDNSResolver uses NS1's api to resolve DNS challenges.
-func NewDNSResolver(key string, ac *acme.Client) *DNSResolver {
-	httpClient := &http.Client{Timeout: time.Second * 10}
-	ns1Client := rest.NewClient(httpClient, rest.SetAPIKey(key))
-
-	return &DNSResolver{
-		acmeClient: ac,
-		ns1Client:  ns1Client,
-	}
+	return d, nil
 }
 
 func (r *DNSResolver) getHostedZone(domain string) (*dns.Zone, error) {
@@ -77,7 +66,6 @@ func (r *DNSResolver) getHostedZone(domain string) (*dns.Zone, error) {
 		}
 
 		zone, _, err = r.ns1Client.Zones.Get(domain)
-		fmt.Println(zone)
 		if err != nil {
 			return nil, err
 		}
@@ -89,11 +77,23 @@ func (r *DNSResolver) getHostedZone(domain string) (*dns.Zone, error) {
 func (r *DNSResolver) newTxtRecord(zone *dns.Zone, domain, value string) *dns.Record {
 	return &dns.Record{
 		Type:   "TXT",
+		TTL:    120,
 		Zone:   zone.Zone,
 		Domain: recordName(domain),
 		Answers: []*dns.Answer{
 			{Rdata: []string{value}},
 		},
+	}
+}
+
+// NewDNSResolver uses NS1's api to resolve DNS challenges.
+func NewDNSResolver(key string, ac *acme.Client) *DNSResolver {
+	httpClient := &http.Client{Timeout: time.Second * 10}
+	ns1Client := rest.NewClient(httpClient, rest.SetAPIKey(key))
+
+	return &DNSResolver{
+		acmeClient: ac,
+		ns1Client:  ns1Client,
 	}
 }
 
