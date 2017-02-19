@@ -16,6 +16,8 @@ const (
 	Pending State = iota
 	// Invalid is the state of a domain when there is a validation error.
 	Invalid
+	// Verified is the state of a domain when the verification succeeded.
+	Verified
 	// Provisioning is the state of a domain when the certificate provisioning has started.
 	Provisioning
 	// Authorized is the state of a domain after the ACME authority authorizes the domain.
@@ -54,6 +56,7 @@ func NewDomainWithChallengeType(account *account.Account, name, challengeType st
 	return &Domain{
 		Account:       account,
 		Name:          name,
+		State:         Pending,
 		ChallengeType: challengeType,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
