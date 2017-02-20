@@ -39,7 +39,9 @@ func (s *testSuite) TestGetDomain() {
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), a.ID)
 
-	d := domain.NewDomain(a, "example.com")
+	d, err := domain.NewDomain(a, "example.com")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), a.ID)
 	err = s.bucket.SaveDomain(d)
 	require.NoError(s.T(), err)
 
@@ -66,7 +68,9 @@ func (s *testSuite) TestSaveDomain() {
 	require.NoError(s.T(), err)
 	require.NotEmpty(s.T(), a.ID)
 
-	d := domain.NewDomain(a, "example.com")
+	d, err := domain.NewDomain(a, "example.com")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), a.ID)
 	err = s.bucket.SaveDomain(d)
 	require.NoError(s.T(), err)
 }

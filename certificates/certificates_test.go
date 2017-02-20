@@ -32,9 +32,10 @@ func (s testSuite) TestRegisterAccount() {
 
 func (s testSuite) TestAuthorizeDomain() {
 	c := s.newClient("")
-	d := domain.NewDomain(c.account, "example.com")
+	d, err := domain.NewDomain(c.account, "example.com")
+	require.NoError(s.T(), err)
 
-	err := c.Register()
+	err = c.Register()
 	require.NoError(s.T(), err)
 
 	authz, err := c.AuthorizeDomain(d)
@@ -49,9 +50,10 @@ func (s testSuite) TestCompleteChallenge() {
 		Set ISARD_TEST_HTTP_LISTENER_ADDR with the listener address (i.e: 127.0.0.1:5002) to enable them`)
 	}
 	c := s.newClient("")
-	d := domain.NewDomain(c.account, "test-cert-isard.cabal.io")
+	d, err := domain.NewDomain(c.account, "test-cert-isard.cabal.io")
+	require.NoError(s.T(), err)
 
-	err := c.Register()
+	err = c.Register()
 	require.NoError(s.T(), err)
 
 	authz, err := c.AuthorizeDomain(d)

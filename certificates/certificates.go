@@ -73,7 +73,7 @@ func (c *Client) RequestCertificate(d *domain.Domain) (*x509.Certificate, error)
 
 	req := &x509.CertificateRequest{
 		Subject:  pkix.Name{CommonName: d.Name},
-		DNSNames: []string{d.Name},
+		DNSNames: d.SANNames(),
 	}
 
 	cr, err := x509.CreateCertificateRequest(rand.Reader, req, pk)
