@@ -2,14 +2,12 @@ package account
 
 import (
 	"crypto"
-	"crypto/rand"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/configuration"
+	"github.com/lost-mountain/isard/cryptopolis"
 )
-
-var rander = rand.Reader
 
 // Account stores information
 // about a registered account that
@@ -36,7 +34,7 @@ func (a *Account) Contacts() []string {
 
 // PrivateKey returns the account's private key.
 func (a *Account) PrivateKey() (crypto.Signer, error) {
-	return extractPEMSigner(a.Key)
+	return cryptopolis.ExtractPEMSigner(a.Key)
 }
 
 // NewAccount initializes a new account for a set of owners.
@@ -58,13 +56,13 @@ func NewAccountWithKey(key string, owners ...string) (*Account, error) {
 	}
 
 	if key == "" {
-		b, err := generatePEM()
+		b, err := cryptopolis.GenerateECPrivateKeyPEM()
 		if err != nil {
 			return nil, err
 		}
 		account.Key = string(b)
 	} else {
-		_, err := extractPEMSigner(key)
+		_, err := cryptopolis.ExtractPEMSigner(key)
 		if err != nil {
 			return nil, err
 		}
