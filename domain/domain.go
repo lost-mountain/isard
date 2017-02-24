@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/account"
 	"github.com/pkg/errors"
-	"github.com/weppos/publicsuffix-go/publicsuffix"
 )
 
 // State is the status the certificate is in
@@ -107,9 +106,9 @@ func NewDomain(account *account.Account, name string) (*Domain, error) {
 // the name to the domain. The given name is added to the
 // SAN names list.
 func NewDomainWithChallengeType(account *account.Account, name, challengeType string) (*Domain, error) {
-	dn, err := publicsuffix.Domain(name)
+	names, err := ExtractNames(name)
 	if err != nil {
-		return nil, errors.Wrap(err, "error looking up the correct domain name")
+		return nil, err
 	}
 
 	if challengeType == "" {
@@ -118,7 +117,7 @@ func NewDomainWithChallengeType(account *account.Account, name, challengeType st
 
 	d := &Domain{
 		Account:       account,
-		Name:          dn,
+		Name:          names.CN,
 		State:         Pending,
 		ChallengeType: challengeType,
 		CreatedAt:     time.Now(),
@@ -126,8 +125,10 @@ func NewDomainWithChallengeType(account *account.Account, name, challengeType st
 		initSAN:       map[string]struct{}{name: struct{}{}},
 	}
 
-	if err := d.AddSANName(name); err != nil {
-		return nil, err
+	for _, s := range names.SAN {
+		if err := d.AddSANName(s); err != nil {
+			return nil, err
+		}
 	}
 	return d, nil
 }

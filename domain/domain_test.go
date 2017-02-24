@@ -5,93 +5,107 @@ import (
 
 	"github.com/lost-mountain/isard/account"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestNewDomain(t *testing.T) {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(t, err)
-
-	d, err := NewDomain(a, "test.cabal.io")
-	require.NoError(t, err)
-	require.NotEmpty(t, d.ID)
-	require.NotEmpty(t, d.CreatedAt)
-	require.NotEmpty(t, d.UpdatedAt)
-	require.Equal(t, "cabal.io", d.Name)
-	require.Equal(t, Pending, d.State)
-	require.Equal(t, "http-01", d.ChallengeType)
-
-	names := d.SANNames()
-	require.Len(t, names, 1)
-	require.Equal(t, "test.cabal.io", names[0])
+type testSuite struct {
+	suite.Suite
+	account *account.Account
 }
 
-func TestNewDomainWithChallengeType(t *testing.T) {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(t, err)
-
-	d, err := NewDomainWithChallengeType(a, "test.cabal.io", "dns-01")
-	require.NoError(t, err)
-	require.NotEmpty(t, d.ID)
-	require.NotEmpty(t, d.CreatedAt)
-	require.NotEmpty(t, d.UpdatedAt)
-	require.Equal(t, "cabal.io", d.Name)
-	require.Equal(t, Pending, d.State)
-	require.Equal(t, "dns-01", d.ChallengeType)
+func (s *testSuite) TestNewDomain() {
+	d, err := NewDomain(s.account, "test.cabal.io")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), d.ID)
+	require.NotEmpty(s.T(), d.CreatedAt)
+	require.NotEmpty(s.T(), d.UpdatedAt)
+	require.Equal(s.T(), "test.cabal.io", d.Name)
+	require.Equal(s.T(), Pending, d.State)
+	require.Equal(s.T(), "http-01", d.ChallengeType)
 
 	names := d.SANNames()
-	require.Len(t, names, 1)
-	require.Equal(t, "test.cabal.io", names[0])
+	require.Len(s.T(), names, 0)
 }
 
-func TestNewDomainEmptyWithChallengeType(t *testing.T) {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(t, err)
-
-	d, err := NewDomainWithChallengeType(a, "test.cabal.io", "")
-	require.NoError(t, err)
-	require.NotEmpty(t, d.ID)
-	require.NotEmpty(t, d.CreatedAt)
-	require.NotEmpty(t, d.UpdatedAt)
-	require.Equal(t, "cabal.io", d.Name)
-	require.Equal(t, Pending, d.State)
-	require.Equal(t, "http-01", d.ChallengeType)
+func (s *testSuite) TestNewDomainWithChallengeType() {
+	d, err := NewDomainWithChallengeType(s.account, "test.cabal.io", "dns-01")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), d.ID)
+	require.NotEmpty(s.T(), d.CreatedAt)
+	require.NotEmpty(s.T(), d.UpdatedAt)
+	require.Equal(s.T(), "test.cabal.io", d.Name)
+	require.Equal(s.T(), Pending, d.State)
+	require.Equal(s.T(), "dns-01", d.ChallengeType)
 
 	names := d.SANNames()
-	require.Len(t, names, 1)
-	require.Equal(t, "test.cabal.io", names[0])
+	require.Len(s.T(), names, 0)
 }
 
-func TestAddSANName(t *testing.T) {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(t, err)
+func (s *testSuite) TestNewDomainEmptyWithChallengeType() {
+	d, err := NewDomainWithChallengeType(s.account, "test.cabal.io", "")
+	require.NoError(s.T(), err)
+	require.NotEmpty(s.T(), d.ID)
+	require.NotEmpty(s.T(), d.CreatedAt)
+	require.NotEmpty(s.T(), d.UpdatedAt)
+	require.Equal(s.T(), "test.cabal.io", d.Name)
+	require.Equal(s.T(), Pending, d.State)
+	require.Equal(s.T(), "http-01", d.ChallengeType)
 
-	d, err := NewDomain(a, "test.cabal.io")
-	require.NoError(t, err)
+	names := d.SANNames()
+	require.Len(s.T(), names, 0)
+}
+
+func (s *testSuite) TestNewDomainWithExtension() {
+	d, err := NewDomainWithChallengeType(s.account, "cabal.io", "")
+	require.NoError(s.T(), err)
+	require.Equal(s.T(), "cabal.io", d.Name)
+
+	names := d.SANNames()
+	require.Len(s.T(), names, 1)
+	require.Contains(s.T(), names, "www.cabal.io")
+
+	d, err = NewDomainWithChallengeType(s.account, "www.cabal.io", "")
+	require.NoError(s.T(), err)
+	require.Equal(s.T(), "cabal.io", d.Name)
+
+	names = d.SANNames()
+	require.Len(s.T(), names, 1)
+	require.Contains(s.T(), names, "www.cabal.io")
+}
+
+func (s *testSuite) TestAddSANName() {
+	d, err := NewDomain(s.account, "test.cabal.io")
+	require.NoError(s.T(), err)
 
 	err = d.AddSANName("beta.cabal.io")
-	require.NoError(t, err)
+	require.NoError(s.T(), err)
 
 	names := d.SANNames()
-	require.Len(t, names, 2)
-	require.Contains(t, names, "beta.cabal.io")
+	require.Len(s.T(), names, 1)
+	require.Contains(s.T(), names, "beta.cabal.io")
 
 	err = d.AddSANName("beta.cabal.io")
-	require.EqualError(t, err, ErrDuplicatedSANName.Error())
+	require.EqualError(s.T(), err, ErrDuplicatedSANName.Error())
 }
 
-func TestRemoveSANName(t *testing.T) {
-	a, err := account.NewAccount("david.calavera@gmail.com")
-	require.NoError(t, err)
-
-	d, err := NewDomain(a, "test.cabal.io")
-	require.NoError(t, err)
+func (s *testSuite) TestRemoveSANName() {
+	d, err := NewDomain(s.account, "test.cabal.io")
+	require.NoError(s.T(), err)
 
 	err = d.AddSANName("beta.cabal.io")
-	require.NoError(t, err)
+	require.NoError(s.T(), err)
 
 	d.RemoveSANName("beta.cabal.io")
-	require.Len(t, d.SANNames(), 1)
+	require.Len(s.T(), d.SANNames(), 0)
+}
 
-	d.RemoveSANName("test.cabal.io")
-	require.Len(t, d.SANNames(), 1)
+func TestDomain(t *testing.T) {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(t, err)
+
+	s := &testSuite{
+		account: a,
+	}
+
+	suite.Run(t, s)
 }
