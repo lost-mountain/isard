@@ -1,24 +1,25 @@
 package broker
 
-import "github.com/google/uuid"
+import "io"
 
-type topicMessage struct {
-	Topic string
-	*Message
-}
-
-// ChannelBroker implements broker.Broker using a channel as a backend.
+// ChannelBroker implements broker.Broker using channels as a backend.
 // This interface is only suitable for testing.
 // It offers no guarantees about the elements pushed and pulled from the queue.
 type ChannelBroker struct {
-	c chan *topicMessage
+	c map[TopicType]chan *Message
 	e chan struct{}
 }
 
 // NewChannelBroker initializes the channel broker.
 func NewChannelBroker() *ChannelBroker {
+	c := map[TopicType]chan *Message{}
+	for _, t := range allTopics {
+		c[t] = make(chan *Message)
+	}
+
 	return &ChannelBroker{
-		c: make(chan *topicMessage),
+		c: c,
+		e: make(chan struct{}),
 	}
 }
 
@@ -30,9 +31,9 @@ func (b *ChannelBroker) Close() error {
 }
 
 // Publish sends messages to the channel for a specific job.
-func (b *ChannelBroker) Publish(topic string, payload interface{}) error {
-	m := NewMessage(uuid.New(), payload)
-	b.c <- &topicMessage{topic, m}
+func (b *ChannelBroker) Publish(topic TopicType, payload io.Reader) error {
+	m := NewMessage(payload)
+	b.c[topic] <- m
 	return nil
 }
 
@@ -41,8 +42,16 @@ func (b *ChannelBroker) Subscribe(processor Processor) {
 	go func() {
 		for {
 			select {
-			case msg := <-b.c:
-				go processor(msg.Message)
+			case msg := <-b.c[Creation]:
+				processor.CreateDomain(msg)
+			case msg := <-b.c[Modification]:
+				processor.ModifyDomain(msg)
+			case msg := <-b.c[Validation]:
+				processor.ValidateDomain(msg)
+			case msg := <-b.c[Authorization]:
+				processor.AuthorizeDomain(msg)
+			case msg := <-b.c[CertRequest]:
+				processor.RequestDomainCertificate(msg)
 			case <-b.e:
 				break
 			}

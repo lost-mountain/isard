@@ -43,6 +43,24 @@ func TestNewDomainWithChallengeType(t *testing.T) {
 	require.Equal(t, "test.cabal.io", names[0])
 }
 
+func TestNewDomainEmptyWithChallengeType(t *testing.T) {
+	a, err := account.NewAccount("david.calavera@gmail.com")
+	require.NoError(t, err)
+
+	d, err := NewDomainWithChallengeType(a, "test.cabal.io", "")
+	require.NoError(t, err)
+	require.NotEmpty(t, d.ID)
+	require.NotEmpty(t, d.CreatedAt)
+	require.NotEmpty(t, d.UpdatedAt)
+	require.Equal(t, "cabal.io", d.Name)
+	require.Equal(t, Pending, d.State)
+	require.Equal(t, "http-01", d.ChallengeType)
+
+	names := d.SANNames()
+	require.Len(t, names, 1)
+	require.Equal(t, "test.cabal.io", names[0])
+}
+
 func TestAddSANName(t *testing.T) {
 	a, err := account.NewAccount("david.calavera@gmail.com")
 	require.NoError(t, err)

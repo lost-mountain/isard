@@ -109,7 +109,11 @@ func NewDomain(account *account.Account, name string) (*Domain, error) {
 func NewDomainWithChallengeType(account *account.Account, name, challengeType string) (*Domain, error) {
 	dn, err := publicsuffix.Domain(name)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "error looking up the correct domain name")
+	}
+
+	if challengeType == "" {
+		challengeType = defaultChallengeType
 	}
 
 	d := &Domain{
