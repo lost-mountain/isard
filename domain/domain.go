@@ -15,6 +15,8 @@ type State int
 const (
 	// Pending is the state of a domain when it enter the system.
 	Pending State = iota
+	// Validating is the state of a domain when the system is validating it.
+	Validating
 	// Invalid is the state of a domain when there is a validation error.
 	Invalid
 	// Verified is the state of a domain when the verification succeeded.
@@ -23,8 +25,12 @@ const (
 	Provisioning
 	// Authorized is the state of a domain after the ACME authority authorizes the domain.
 	Authorized
+	// Requesting is the state of a domain when it's requesting the certificate.
+	Requesting
 	// Issued is the state of a domain after the certificate has been issued.
 	Issued
+	// Cancelling is the state of a domain when it's being cancelled.
+	Cancelling
 	// Cancelled is the state of a domain after the certificate has been cancelled.
 	Cancelled
 

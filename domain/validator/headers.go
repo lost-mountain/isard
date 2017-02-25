@@ -1,4 +1,4 @@
-package domain
+package validator
 
 import (
 	"net/http"
@@ -6,6 +6,17 @@ import (
 
 	"github.com/pkg/errors"
 )
+
+// ValidHeader checks if a given response header has
+// an expected value.
+func ValidHeader(hostname, header, expected string) bool {
+	v, err := readHeader(hostname, hostname, header)
+	if err != nil {
+		return false
+	}
+
+	return v == expected
+}
 
 // readHeader sends an HTTP HEAD request to the given address
 // asking for the hostname information.

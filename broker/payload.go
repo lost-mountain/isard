@@ -11,3 +11,11 @@ type CreateDomainPayload struct {
 	DomainName    string    `json:"domain_name"`
 	ChallengeType string    `json:"challenge_type"`
 }
+
+// DomainPayload is the payload
+// sent by a client to verify a
+// domain.
+type DomainPayload struct {
+	AccountID  uuid.UUID `json:"account_id"`
+	DomainName string    `json:"domain_name"`
+}

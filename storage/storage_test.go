@@ -45,11 +45,11 @@ func (s *testSuite) TestGetDomain() {
 	err = s.bucket.SaveDomain(d)
 	require.NoError(s.T(), err)
 
-	dom, err := s.bucket.GetDomain(a, "example.com")
+	dom, err := s.bucket.GetDomain(a.ID, "example.com")
 	require.NoError(s.T(), err)
 	require.Equal(s.T(), d.ID, dom.ID)
 
-	_, err = s.bucket.GetDomain(a, "foobar.com")
+	_, err = s.bucket.GetDomain(a.ID, "foobar.com")
 	require.Error(s.T(), err, "unable to get domain with missing name")
 }
 

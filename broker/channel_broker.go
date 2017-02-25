@@ -1,7 +1,5 @@
 package broker
 
-import "io"
-
 // ChannelBroker implements broker.Broker using channels as a backend.
 // This interface is only suitable for testing.
 // It offers no guarantees about the elements pushed and pulled from the queue.
@@ -31,7 +29,7 @@ func (b *ChannelBroker) Close() error {
 }
 
 // Publish sends messages to the channel for a specific job.
-func (b *ChannelBroker) Publish(topic TopicType, payload io.Reader) error {
+func (b *ChannelBroker) Publish(topic TopicType, payload interface{}) error {
 	m := NewMessage(payload)
 	b.c[topic] <- m
 	return nil

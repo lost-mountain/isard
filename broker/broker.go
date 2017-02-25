@@ -1,7 +1,5 @@
 package broker
 
-import "io"
-
 // TopicType defines the operations
 // the broker knows about.
 // They are used as a state machine
@@ -29,20 +27,10 @@ var allTopics = []TopicType{
 	CertRequest,
 }
 
-// Processor defines an interface to process messages
-// publised by the Broker.
-type Processor interface {
-	CreateDomain(*Message) error
-	ModifyDomain(*Message) error
-	ValidateDomain(*Message) error
-	AuthorizeDomain(*Message) error
-	RequestDomainCertificate(*Message) error
-}
-
 // Broker defines an interface to publish
 // messages in a queue and subscribe to them.
 type Broker interface {
 	Close() error
-	Publish(topic TopicType, payload io.Reader) error
+	Publish(topic TopicType, payload interface{}) error
 	Subscribe(processor Processor) error
 }

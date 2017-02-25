@@ -11,7 +11,7 @@ import (
 type Bucket interface {
 	Close() error
 	GetAccount(id, token uuid.UUID) (*account.Account, error)
-	GetDomain(account *account.Account, name string) (*domain.Domain, error)
+	GetDomain(accountID uuid.UUID, name string) (*domain.Domain, error)
 	SaveAccount(account *account.Account) error
 	SaveDomain(domain *domain.Domain) error
 }

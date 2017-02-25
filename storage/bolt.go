@@ -44,13 +44,13 @@ func (b *Bolt) GetAccount(id, token uuid.UUID) (*account.Account, error) {
 }
 
 // GetDomain searches for a domain with a given name.
-func (b *Bolt) GetDomain(account *account.Account, name string) (*domain.Domain, error) {
+func (b *Bolt) GetDomain(accountID uuid.UUID, name string) (*domain.Domain, error) {
 	var domain domain.Domain
 
 	err := b.db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("domains"))
 
-		key := fmt.Sprintf("%s@@%s", account.ID, name)
+		key := fmt.Sprintf("%s@@%s", accountID, name)
 		v := b.Get([]byte(key))
 
 		return json.Unmarshal(v, &domain)
