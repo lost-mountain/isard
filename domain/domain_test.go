@@ -24,7 +24,8 @@ func (s *testSuite) TestNewDomain() {
 	require.Equal(s.T(), "http-01", d.ChallengeType)
 
 	names := d.SANNames()
-	require.Len(s.T(), names, 0)
+	require.Len(s.T(), names, 1)
+	require.Equal(s.T(), []string{"test.cabal.io"}, names)
 }
 
 func (s *testSuite) TestNewDomainWithChallengeType() {
@@ -38,7 +39,8 @@ func (s *testSuite) TestNewDomainWithChallengeType() {
 	require.Equal(s.T(), "dns-01", d.ChallengeType)
 
 	names := d.SANNames()
-	require.Len(s.T(), names, 0)
+	require.Len(s.T(), names, 1)
+	require.Equal(s.T(), []string{"test.cabal.io"}, names)
 }
 
 func (s *testSuite) TestNewDomainEmptyWithChallengeType() {
@@ -52,7 +54,8 @@ func (s *testSuite) TestNewDomainEmptyWithChallengeType() {
 	require.Equal(s.T(), "http-01", d.ChallengeType)
 
 	names := d.SANNames()
-	require.Len(s.T(), names, 0)
+	require.Len(s.T(), names, 1)
+	require.Equal(s.T(), []string{"test.cabal.io"}, names)
 }
 
 func (s *testSuite) TestNewDomainWithExtension() {
@@ -61,16 +64,16 @@ func (s *testSuite) TestNewDomainWithExtension() {
 	require.Equal(s.T(), "cabal.io", d.Name)
 
 	names := d.SANNames()
-	require.Len(s.T(), names, 1)
-	require.Contains(s.T(), names, "www.cabal.io")
+	require.Len(s.T(), names, 2)
+	require.Equal(s.T(), []string{"cabal.io", "www.cabal.io"}, names)
 
 	d, err = NewDomainWithChallengeType(s.account, "www.cabal.io", "")
 	require.NoError(s.T(), err)
 	require.Equal(s.T(), "cabal.io", d.Name)
 
 	names = d.SANNames()
-	require.Len(s.T(), names, 1)
-	require.Contains(s.T(), names, "www.cabal.io")
+	require.Len(s.T(), names, 2)
+	require.Equal(s.T(), []string{"cabal.io", "www.cabal.io"}, names)
 }
 
 func (s *testSuite) TestAddSANName() {
@@ -81,7 +84,7 @@ func (s *testSuite) TestAddSANName() {
 	require.NoError(s.T(), err)
 
 	names := d.SANNames()
-	require.Len(s.T(), names, 1)
+	require.Len(s.T(), names, 2)
 	require.Contains(s.T(), names, "beta.cabal.io")
 
 	err = d.AddSANName("beta.cabal.io")
@@ -96,7 +99,9 @@ func (s *testSuite) TestRemoveSANName() {
 	require.NoError(s.T(), err)
 
 	d.RemoveSANName("beta.cabal.io")
-	require.Len(s.T(), d.SANNames(), 0)
+	names := d.SANNames()
+	require.Len(s.T(), names, 1)
+	require.Contains(s.T(), names, "test.cabal.io")
 }
 
 func TestDomain(t *testing.T) {

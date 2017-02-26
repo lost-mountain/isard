@@ -128,7 +128,7 @@ func NewDomainWithChallengeType(account *account.Account, name, challengeType st
 		ChallengeType: challengeType,
 		CreatedAt:     time.Now(),
 		UpdatedAt:     time.Now(),
-		initSAN:       map[string]struct{}{name: struct{}{}},
+		initSAN:       map[string]struct{}{names.CN: struct{}{}},
 	}
 
 	for _, s := range names.SAN {

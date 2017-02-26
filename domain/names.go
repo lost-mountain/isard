@@ -28,11 +28,12 @@ func ExtractNames(name string) (*Names, error) {
 	if normal == dn {
 		return &Names{
 			CN:  dn,
-			SAN: []string{"www." + dn},
+			SAN: []string{dn, "www." + dn},
 		}, nil
 	}
 
 	return &Names{
-		CN: name,
+		CN:  name,
+		SAN: []string{name},
 	}, nil
 }
