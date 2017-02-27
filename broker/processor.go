@@ -126,7 +126,26 @@ func (p *DomainProcessor) ValidateDomain(m *Message) error {
 }
 
 func (p *DomainProcessor) checkAuthzState(c *certificates.Client, d *domain.Domain) error {
-	return nil
+	authz, err := c.GetAuthorization(d)
+	if err != nil {
+		return err
+	}
+
+	m := NewMessage(&DomainPayload{
+		AccountID:  d.Account.ID,
+		DomainName: d.Name,
+	})
+
+	if authz.Status != acme.StatusPending && authz.Status != acme.StatusProcessing {
+		d.State = domain.Authorized
+		if err := p.db.SaveDomain(d); err != nil {
+			return err
+		}
+
+		return p.broker.Publish(CertRequest, m)
+	}
+
+	return p.broker.Publish(Authorization, m)
 }
 
 func (p *DomainProcessor) startAuthProcess(c *certificates.Client, d *domain.Domain) error {

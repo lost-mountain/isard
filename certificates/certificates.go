@@ -40,8 +40,13 @@ func (c *Client) AcceptChallenge(d *domain.Domain, chal *acme.Challenge) (*acme.
 // AuthorizeDomain initiates a domain name registration
 // by sending the initial authorization.
 func (c *Client) AuthorizeDomain(d *domain.Domain) (*acme.Authorization, error) {
-	ctx := context.Background()
-	return c.client.Authorize(ctx, d.Name)
+	return c.client.Authorize(context.Background(), d.Name)
+}
+
+// GetAuthorization requests an authorization object that
+// has already been issued.
+func (c *Client) GetAuthorization(d *domain.Domain) (*acme.Authorization, error) {
+	return c.client.GetAuthorization(context.Background(), d.AuthorizationURL)
 }
 
 // PrepareChallenge uses a challenge resolver to prepare a challenge.
