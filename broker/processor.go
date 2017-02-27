@@ -88,7 +88,32 @@ func (p *DomainProcessor) ModifyDomain(*Message) error { return nil }
 // If the job succeeds, it marks the domain as issued and removes it from any
 // processing queue. Otherwise, it leaves to the broker
 // to decide what to do with the message.
-func (p *DomainProcessor) RequestDomainCertificate(*Message) error { return nil }
+func (p *DomainProcessor) RequestDomainCertificate(m *Message) error {
+	v, ok := m.Payload.(*DomainPayload)
+	if !ok {
+		return errors.Errorf("error verifying domain, invalid payload message: %v", m.Payload)
+	}
+
+	d, err := p.db.GetDomain(v.AccountID, v.DomainName)
+	if err != nil {
+		return err
+	}
+
+	c, err := certificates.NewClientWithAPIKey(d.Account, p.config.Ns1APIKey)
+	if err != nil {
+		return err
+	}
+
+	cert, err := c.RequestCertificate(d)
+	if err != nil {
+		return err
+	}
+
+	d.Certificate = cert
+	d.State = domain.Issued
+
+	return p.db.SaveDomain(d)
+}
 
 // ValidateDomain validates that a domain is correctly configured
 // before authorizing its issuing.

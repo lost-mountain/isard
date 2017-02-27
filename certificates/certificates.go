@@ -1,6 +1,7 @@
 package certificates
 
 import (
+	"bytes"
 	"context"
 	"crypto"
 	"crypto/ecdsa"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/lost-mountain/isard/account"
 	"github.com/lost-mountain/isard/certificates/challenges"
+	"github.com/lost-mountain/isard/cryptopolis"
 	"github.com/lost-mountain/isard/domain"
 	"github.com/pkg/errors"
 
@@ -70,7 +72,7 @@ func (c *Client) PrepareChallenge(d *domain.Domain, chal *acme.Challenge) (*doma
 
 // RequestCertificate retrieves a certificate once the challenge has been completed
 // and the authorization is valid.
-func (c *Client) RequestCertificate(d *domain.Domain) (*x509.Certificate, error) {
+func (c *Client) RequestCertificate(d *domain.Domain) (*cryptopolis.Certificate, error) {
 	pk, err := d.Account.PrivateKey()
 	if err != nil {
 		return nil, errors.Wrapf(err, "error requesting certificate for domain: %s", d.Name)
@@ -92,12 +94,7 @@ func (c *Client) RequestCertificate(d *domain.Domain) (*x509.Certificate, error)
 		return nil, errors.Wrapf(err, "error requesting certificate for domain: %s", d.Name)
 	}
 
-	l, err := validateCertificate(d.Name, pk, der)
-	if err != nil {
-		return nil, err
-	}
-
-	return l, nil
+	return validateCertificate(d.Name, pk, der)
 }
 
 // Register sends the account information to the ACME service.
@@ -142,7 +139,7 @@ func NewClientWithAPIKey(a *account.Account, apiKey string) (*Client, error) {
 // validateCertificate parses the certificate to ensure it's valid.
 // Extracted from acme/autocert:
 // https://github.com/golang/crypto/blob/9b1a210a06ea1176ec1f0a1ddf83ad7463b8ea3e/acme/autocert/autocert.go#L714
-func validateCertificate(domain string, key crypto.Signer, der [][]byte) (*x509.Certificate, error) {
+func validateCertificate(domain string, key crypto.Signer, der [][]byte) (*cryptopolis.Certificate, error) {
 	var n int
 	for _, b := range der {
 		n += len(b)
@@ -174,6 +171,31 @@ func validateCertificate(domain string, key crypto.Signer, der [][]byte) (*x509.
 		return nil, errors.Wrapf(err, "invalid hostname for certificate: %s", domain)
 	}
 
+	cert := &cryptopolis.Certificate{}
+	var caBuf bytes.Buffer
+	for _, c := range x509Cert[1:] {
+		pubDer, err := x509.MarshalPKIXPublicKey(c.PublicKey)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error marshaling certificate chain for domain: %s", domain)
+		}
+		if err := cryptopolis.EncodeCertPEM(&caBuf, pubDer); err != nil {
+			return nil, errors.Wrapf(err, "error marshaling certificate chain for domain: %s", domain)
+		}
+	}
+	cert.CA = caBuf.Bytes()
+
+	pubDer, err := x509.MarshalPKIXPublicKey(leaf.PublicKey)
+	if err != nil {
+		return nil, errors.Wrapf(err, "error marshaling public key for domain: %s", domain)
+	}
+
+	var pubBuf bytes.Buffer
+	if err := cryptopolis.EncodeCertPEM(&pubBuf, pubDer); err != nil {
+		return nil, errors.Wrapf(err, "error marshaling public key for domain: %s", domain)
+	}
+
+	cert.Cert = pubBuf.Bytes()
+
 	switch pubKey := leaf.PublicKey.(type) {
 	case *rsa.PublicKey:
 		prv, ok := key.(*rsa.PrivateKey)
@@ -184,6 +206,13 @@ func validateCertificate(domain string, key crypto.Signer, der [][]byte) (*x509.
 		if pubKey.N.Cmp(prv.N) != 0 {
 			return nil, errors.Errorf("mismatched public and private keys for certificate: %s", domain)
 		}
+
+		var prvBuf bytes.Buffer
+		if err := cryptopolis.EncodeRSAKeyPEM(&prvBuf, prv); err != nil {
+			return nil, errors.Wrapf(err, "error marshaling private key for domain: %s", domain)
+		}
+
+		cert.Key = prvBuf.Bytes()
 	case *ecdsa.PublicKey:
 		prv, ok := key.(*ecdsa.PrivateKey)
 		if !ok {
@@ -192,9 +221,16 @@ func validateCertificate(domain string, key crypto.Signer, der [][]byte) (*x509.
 		if pubKey.X.Cmp(prv.X) != 0 || pubKey.Y.Cmp(prv.Y) != 0 {
 			return nil, errors.Errorf("mismatched public and private keys for certificate: %s", domain)
 		}
+
+		var prvBuf bytes.Buffer
+		if err := cryptopolis.EncodeECDSAKeyPEM(&prvBuf, prv); err != nil {
+			return nil, errors.Wrapf(err, "error marshaling private key for domain: %s", domain)
+		}
+
+		cert.Key = prvBuf.Bytes()
 	default:
 		return nil, errors.Errorf("unsupported certificate type for domain: %s", domain)
 	}
 
-	return leaf, nil
+	return cert, nil
 }

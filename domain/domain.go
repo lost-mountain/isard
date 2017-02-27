@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lost-mountain/isard/account"
+	"github.com/lost-mountain/isard/cryptopolis"
 	"github.com/pkg/errors"
 )
 
@@ -55,6 +56,8 @@ type Domain struct {
 	UpdatedAt               time.Time
 	HTTP01ChallengePath     string
 	HTTP01ChallengeResponse string
+
+	Certificate *cryptopolis.Certificate
 
 	initSAN map[string]struct{}
 	san     map[string]struct{}
