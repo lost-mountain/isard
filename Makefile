@@ -1,4 +1,4 @@
-.PONY: all build deps image lint test
+.PONY: all build deps image lint proto test
 
 all: test build ## Run the tests and build the binary.
 
@@ -16,7 +16,10 @@ image: ## Build the Docker image.
 	@docker build .
 
 lint: ## Run golint to ensure the code follows Go styleguide.
-	@golint -set_exit_status `go list ./... | grep -v /vendor/`
+	@golint -set_exit_status account broker certificates configuration cryptopolis domain rpc/api secrets storage
 
-test: lint ## Run tests.
+proto: ## Generate the Go definitions for the protocol buffer schemas.
+	@protoc -I rpc rpc/rpc.proto --go_out=plugins=grpc:rpc
+
+test: lint proto ## Run tests.
 	@go test -v `go list ./... | grep -v /vendor/`

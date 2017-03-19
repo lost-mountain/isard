@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package rpc;
+
+service API {
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+	rpc UpdateAccount(UpdateAccountRequest) returns (UpdateAccountResponse);
+  rpc CreateCertificate(CreateCertificateRequest) returns (CreateCertificateResponse);
+  rpc ResolveCertificateChallenge(ResolveChallengeRequest) returns (ResolveChallengeResponse);
+  rpc CheckCertificateState(CertificateStateRequest) returns (CertificateStateResponse);
+  rpc GetCertificate(GetCertificateRequest) returns (GetCertificateResponse);
+}
+
+enum AccountEnvironment {
+  PRODUCTION = 0;
+  STAGING = 1;
+}
+
+message CreateAccountRequest {
+  string owner = 1;
+  string key = 2;
+  AccountEnvironment environment = 3;
+}
+
+message CreateAccountResponse {
+  string id = 1;
+  string token = 2;
+}
+
+message UpdateAccountRequest {
+  string id = 1;
+  AccountEnvironment environment = 2;
+}
+
+message UpdateAccountResponse {}
+
+message CreateCertificateRequest {
+  string accountID = 1;
+  string domain = 2;
+  string challengeType = 3;
+}
+
+message CreateCertificateResponse {
+  string accountID = 1;
+  string domainID = 2;
+  string state = 3;
+}
+
+message ResolveChallengeRequest {
+  string domain = 1;
+}
+
+message ResolveChallengeResponse {
+  string certificate = 1;
+  string key = 2;
+  string chain = 3;
+}
+
+message CertificateStateRequest {
+  string accountID = 1;
+  string domainID = 2;
+}
+
+message CertificateStateResponse {
+}
+
+message GetCertificateRequest {
+  string domain = 1;
+}
+
+message GetCertificateResponse {
+  string certificate = 1;
+  string key = 2;
+  string chain = 3;
+}
