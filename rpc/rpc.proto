@@ -36,8 +36,9 @@ message UpdateAccountResponse {}
 
 message CreateCertificateRequest {
   string accountID = 1;
-  string domain = 2;
-  string challengeType = 3;
+  string accountToken = 2;
+  string domain = 3;
+  string challengeType = 4;
 }
 
 message CreateCertificateResponse {
@@ -47,7 +48,9 @@ message CreateCertificateResponse {
 }
 
 message ResolveChallengeRequest {
-  string domain = 1;
+  string accountID = 1;
+  string accountToken = 2;
+  string domain = 3;
 }
 
 message ResolveChallengeResponse {
@@ -58,14 +61,17 @@ message ResolveChallengeResponse {
 
 message CertificateStateRequest {
   string accountID = 1;
-  string domainID = 2;
+  string accountToken = 2;
+  string domainID = 3;
 }
 
 message CertificateStateResponse {
 }
 
 message GetCertificateRequest {
-  string domain = 1;
+  string accountID = 1;
+  string accountToken = 2;
+  string domain = 3;
 }
 
 message GetCertificateResponse {
