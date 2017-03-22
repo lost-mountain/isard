@@ -1,5 +1,8 @@
 {
     "dependencies": {
+        "cloud.google.com/go": {
+            "branch": "master"
+        },
         "github.com/boltdb/bolt": {
             "branch": "master"
         },

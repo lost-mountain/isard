@@ -2,6 +2,15 @@
     "memo": "",
     "projects": [
         {
+            "name": "cloud.google.com/go",
+            "branch": "master",
+            "revision": "ecb9f0c02357cff27e7149d3659d9f8c86f1a4e5",
+            "packages": [
+                "pubsub",
+                "compute/metadata"
+            ]
+        },
+        {
             "name": "github.com/boltdb/bolt",
             "branch": "master",
             "revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",
@@ -22,13 +31,26 @@
             "branch": "master",
             "revision": "c9c7427a2a70d2eb3bafa0ab2dc163e45f143317",
             "packages": [
-                "proto"
+                "proto",
+                "ptypes",
+                "protoc-gen-go/descriptor",
+                "ptypes/duration",
+                "ptypes/empty",
+                "ptypes/timestamp"
             ]
         },
         {
             "name": "github.com/google/uuid",
             "branch": "master",
             "revision": "064e2069ce9c359c118179501254f67d7d37ba24",
+            "packages": [
+                "."
+            ]
+        },
+        {
+            "name": "github.com/googleapis/gax-go",
+            "branch": "master",
+            "revision": "9af46dd5a1713e8b5cd71106287eba3cefdde50b",
             "packages": [
                 "."
             ]
@@ -87,11 +109,29 @@
             "revision": "a6577fac2d73be281a500b310739095313165611",
             "packages": [
                 "context",
-                "context/ctxhttp",
-                "idna",
                 "http2",
                 "http2/hpack",
-                "trace"
+                "trace",
+                "context/ctxhttp",
+                "idna"
+            ]
+        },
+        {
+            "name": "golang.org/x/oauth2",
+            "branch": "master",
+            "revision": "7fdf09982454086d5570c7db3e11f360194830ca",
+            "packages": [
+                ".",
+                "google",
+                "jwt"
+            ]
+        },
+        {
+            "name": "golang.org/x/sync",
+            "branch": "master",
+            "revision": "5a06fca2c336a4b2b2fcb45702e8c47621b2aa2c",
+            "packages": [
+                "semaphore"
             ]
         },
         {
@@ -102,11 +142,46 @@
             ]
         },
         {
+            "name": "google.golang.org/api",
+            "branch": "master",
+            "revision": "16ab375f94503bfa0d19db78e96bffbe1a34354f",
+            "packages": [
+                "iterator",
+                "option",
+                "support/bundler",
+                "transport"
+            ]
+        },
+        {
+            "name": "google.golang.org/appengine",
+            "branch": "master",
+            "revision": "56d253d1dd14aa01937e12c73a0971bcfd797ff2",
+            "packages": [
+                "urlfetch",
+                ".",
+                "socket"
+            ]
+        },
+        {
+            "name": "google.golang.org/genproto",
+            "branch": "master",
+            "revision": "de9f5e90fe9b278809363f08c2072d2f2a429de7",
+            "packages": [
+                "googleapis/iam/v1",
+                "googleapis/pubsub/v1"
+            ]
+        },
+        {
             "name": "google.golang.org/grpc",
             "branch": "master",
-            "revision": "cdee119ee21e61eef7093a41ba148fa83585e143",
+            "revision": "c5a5dbc5005d9153f67df476a7b561c07b22dbc2",
             "packages": [
-                "."
+                ".",
+                "codes",
+                "naming",
+                "credentials",
+                "credentials/oauth",
+                "metadata"
             ]
         },
         {

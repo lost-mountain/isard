@@ -36,7 +36,7 @@ func (b *ChannelBroker) Publish(topic TopicType, payload interface{}) error {
 }
 
 // Subscribe receives messages from the channel to process them.
-func (b *ChannelBroker) Subscribe(processor Processor) {
+func (b *ChannelBroker) Subscribe(processor Processor) error {
 	go func() {
 		for {
 			select {
@@ -55,4 +55,6 @@ func (b *ChannelBroker) Subscribe(processor Processor) {
 			}
 		}
 	}()
+
+	return nil
 }

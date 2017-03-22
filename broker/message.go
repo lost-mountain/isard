@@ -5,6 +5,7 @@ import "github.com/google/uuid"
 // Message is the structure that the broker sends and receives.
 type Message struct {
 	JobUUID uuid.UUID // unique identifiler for the job that trigerred this message
+	Topic   TopicType
 	Payload interface{}
 }
 
