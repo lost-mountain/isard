@@ -1,0 +1,37 @@
+{
+    "dependencies": {
+        "github.com/boltdb/bolt": {
+            "branch": "master"
+        },
+        "github.com/golang/protobuf": {
+            "branch": "master"
+        },
+        "github.com/google/uuid": {
+            "branch": "master"
+        },
+        "github.com/miekg/dns": {
+            "revision": "031fad65fea12748347cbb2a30f190b6257fc844"
+        },
+        "github.com/pkg/errors": {
+            "branch": "master"
+        },
+        "github.com/stretchr/testify": {
+            "revision": "0744955171b0b6e1871ff9d7366abc2b7a7fcec0"
+        },
+        "github.com/weppos/publicsuffix-go": {
+            "branch": "master"
+        },
+        "golang.org/x/crypto": {
+            "branch": "master"
+        },
+        "golang.org/x/net": {
+            "branch": "master"
+        },
+        "google.golang.org/grpc": {
+            "branch": "master"
+        },
+        "gopkg.in/ns1/ns1-go.v2": {
+            "branch": "v2"
+        }
+    }
+}
