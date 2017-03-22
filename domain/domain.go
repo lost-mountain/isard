@@ -51,6 +51,7 @@ type Domain struct {
 	ChallengeType           string
 	AuthorizationURL        string
 	State                   State
+	AccountID               string
 	Account                 *account.Account
 	CreatedAt               time.Time
 	UpdatedAt               time.Time
@@ -125,6 +126,7 @@ func NewDomainWithChallengeType(account *account.Account, name, challengeType st
 	}
 
 	d := &Domain{
+		AccountID:     account.ID.String(),
 		Account:       account,
 		Name:          names.CN,
 		State:         Pending,
