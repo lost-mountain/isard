@@ -65,7 +65,8 @@ func (s *testSuite) TestNewDomainWithExtension() {
 
 	names := d.SANNames()
 	require.Len(s.T(), names, 2)
-	require.Equal(s.T(), []string{"cabal.io", "www.cabal.io"}, names)
+	require.Contains(s.T(), names, "cabal.io")
+	require.Contains(s.T(), names, "www.cabal.io")
 
 	d, err = NewDomainWithChallengeType(s.account, "www.cabal.io", "")
 	require.NoError(s.T(), err)
@@ -73,7 +74,8 @@ func (s *testSuite) TestNewDomainWithExtension() {
 
 	names = d.SANNames()
 	require.Len(s.T(), names, 2)
-	require.Equal(s.T(), []string{"cabal.io", "www.cabal.io"}, names)
+	require.Contains(s.T(), names, "cabal.io")
+	require.Contains(s.T(), names, "www.cabal.io")
 }
 
 func (s *testSuite) TestAddSANName() {
