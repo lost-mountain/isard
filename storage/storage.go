@@ -15,9 +15,3 @@ type Bucket interface {
 	SaveAccount(account *account.Account) error
 	SaveDomain(domain *domain.Domain) error
 }
-
-// Configuration holds information to configure
-// a storage backend.
-type Configuration struct {
-	URL string
-}

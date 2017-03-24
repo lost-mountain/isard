@@ -1,8 +1,6 @@
 package api
 
 import (
-	"context"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 
@@ -12,6 +10,8 @@ import (
 	"github.com/lost-mountain/isard/domain"
 	"github.com/lost-mountain/isard/rpc"
 	"github.com/lost-mountain/isard/storage"
+
+	"golang.org/x/net/context"
 )
 
 // API implements the GRPC server definition.
@@ -125,4 +125,13 @@ func (a *API) GetCertificate(ctx context.Context, req *rpc.GetCertificateRequest
 		Key:         string(d.Certificate.Key),
 		Chain:       string(d.Certificate.CA),
 	}, nil
+}
+
+// NewAPI initializes the API.
+func NewAPI(bucket storage.Bucket, broker broker.Broker, config *configuration.Configuration) *API {
+	return &API{
+		bucket:        bucket,
+		broker:        broker,
+		configuration: config,
+	}
 }

@@ -69,8 +69,8 @@ func (d *Datastore) SaveDomain(dm *domain.Domain) error {
 	return errors.Wrapf(err, "error saving domain %s", dm.ID)
 }
 
-// NewDatastoreBucket connects with the Datastore server.
-func NewDatastoreBucket(projectID string) (*Datastore, error) {
+// NewDatastore connects with the Datastore server.
+func NewDatastore(projectID string) (*Datastore, error) {
 	ctx := context.Background()
 	client, err := datastore.NewClient(ctx, projectID)
 	if err != nil {

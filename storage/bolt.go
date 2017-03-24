@@ -95,8 +95,8 @@ func (b *Bolt) SaveDomain(d *domain.Domain) error {
 }
 
 // NewBoltBucket connects with a BoltDB database.
-func NewBoltBucket(c *Configuration) (*Bolt, error) {
-	db, err := bolt.Open(c.URL, 0600, nil)
+func NewBoltBucket(url string) (*Bolt, error) {
+	db, err := bolt.Open(url, 0600, nil)
 	if err != nil {
 		return nil, err
 	}

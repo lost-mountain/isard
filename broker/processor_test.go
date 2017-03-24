@@ -42,7 +42,7 @@ func (s *testSuite) TestValidateDomain() {
 	err := s.processor.ValidateDomain(m)
 	require.NoError(s.T(), err)
 
-	d, err := s.processor.db.GetDomain(s.account.ID, "netlify.com")
+	d, err := s.processor.bucket.GetDomain(s.account.ID, "netlify.com")
 	require.NoError(s.T(), err)
 	require.Equal(s.T(), domain.Verified, d.State)
 }
@@ -82,9 +82,7 @@ func TestProcessor(t *testing.T) {
 	err = f.Close()
 	require.NoError(t, err)
 
-	b, err := storage.NewBoltBucket(&storage.Configuration{
-		URL: f.Name(),
-	})
+	b, err := storage.NewBoltBucket(f.Name())
 	require.NoError(t, err)
 
 	a, err := account.NewAccount("david.calavera@gmail.com")
@@ -93,14 +91,14 @@ func TestProcessor(t *testing.T) {
 	err = b.SaveAccount(a)
 	require.NoError(t, err)
 
-	c := &configuration.Configuration{}
-	c.Domains.HeaderValidator.Name = "Server"
-	c.Domains.HeaderValidator.Value = "Netlify"
+	dom := configuration.DomainsConfiguration{}
+	dom.HeaderValidator.Name = "Server"
+	dom.HeaderValidator.Value = "Netlify"
 
 	p := &DomainProcessor{
-		db:     b,
+		bucket: b,
 		broker: &noopBroker{},
-		config: c.Domains,
+		config: &dom,
 	}
 
 	s := &testSuite{

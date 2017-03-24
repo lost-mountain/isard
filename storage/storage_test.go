@@ -83,9 +83,7 @@ func TestBoltBucket(t *testing.T) {
 	err = f.Close()
 	require.NoError(t, err)
 
-	b, err := NewBoltBucket(&Configuration{
-		URL: f.Name(),
-	})
+	b, err := NewBoltBucket(f.Name())
 	require.NoError(t, err)
 
 	suite.Run(t, &testSuite{bucket: b})

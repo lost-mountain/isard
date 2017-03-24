@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lost-mountain/isard/configuration"
 	"github.com/lost-mountain/isard/cryptopolis"
 )
 
@@ -46,13 +45,12 @@ func NewAccount(owners ...string) (*Account, error) {
 // with an existent certificate.
 func NewAccountWithKey(key string, owners ...string) (*Account, error) {
 	account := &Account{
-		ID:           uuid.New(),
-		Token:        uuid.New(),
-		Key:          key,
-		DirectoryURL: configuration.StagingDirectory,
-		Owners:       owners,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		ID:        uuid.New(),
+		Token:     uuid.New(),
+		Key:       key,
+		Owners:    owners,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	if key == "" {

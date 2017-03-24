@@ -1,0 +1,9 @@
+{
+  "TLS": {
+    "CertFile": "/tmp/cert.pem",
+    "KeyFile": "/tmp/key.pem"
+  },
+  "TCP": {
+    "Port": 8080
+  }
+}

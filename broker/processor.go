@@ -24,9 +24,9 @@ type Processor interface {
 // It moves the domain across the state machine
 // accordingly to the previous operation and its result.
 type DomainProcessor struct {
-	db     storage.Bucket
+	bucket storage.Bucket
 	broker Broker
-	config configuration.DomainsConfiguration
+	config *configuration.DomainsConfiguration
 }
 
 // AuthorizeDomain sends an authorization request to the CA.
@@ -39,7 +39,7 @@ func (p *DomainProcessor) AuthorizeDomain(m *Message) error {
 		return errors.Errorf("error authorizing domain, invalid payload message: %v", m.Payload)
 	}
 
-	d, err := p.db.GetDomain(v.AccountID, v.DomainName)
+	d, err := p.bucket.GetDomain(v.AccountID, v.DomainName)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (p *DomainProcessor) CreateDomain(m *Message) error {
 		return errors.Errorf("error creating domain, invalid payload message: %v", m.Payload)
 	}
 
-	a, err := p.db.GetAccount(v.AccountID, v.AccountToken)
+	a, err := p.bucket.GetAccount(v.AccountID, v.AccountToken)
 	if err != nil {
 		return err
 	}
@@ -75,7 +75,7 @@ func (p *DomainProcessor) CreateDomain(m *Message) error {
 		return err
 	}
 
-	return p.db.SaveDomain(d)
+	return p.bucket.SaveDomain(d)
 }
 
 // ModifyDomain modifies a domain.
@@ -94,7 +94,7 @@ func (p *DomainProcessor) RequestDomainCertificate(m *Message) error {
 		return errors.Errorf("error verifying domain, invalid payload message: %v", m.Payload)
 	}
 
-	d, err := p.db.GetDomain(v.AccountID, v.DomainName)
+	d, err := p.bucket.GetDomain(v.AccountID, v.DomainName)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (p *DomainProcessor) RequestDomainCertificate(m *Message) error {
 	d.Certificate = cert
 	d.State = domain.Issued
 
-	return p.db.SaveDomain(d)
+	return p.bucket.SaveDomain(d)
 }
 
 // ValidateDomain validates that a domain is correctly configured
@@ -126,7 +126,7 @@ func (p *DomainProcessor) ValidateDomain(m *Message) error {
 		return errors.Errorf("error verifying domain, invalid payload message: %v", m.Payload)
 	}
 
-	d, err := p.db.GetDomain(v.AccountID, v.DomainName)
+	d, err := p.bucket.GetDomain(v.AccountID, v.DomainName)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (p *DomainProcessor) ValidateDomain(m *Message) error {
 	}
 
 	d.State = next
-	if err := p.db.SaveDomain(d); err != nil {
+	if err := p.bucket.SaveDomain(d); err != nil {
 		return err
 	}
 
@@ -163,7 +163,7 @@ func (p *DomainProcessor) checkAuthzState(c *certificates.Client, d *domain.Doma
 
 	if authz.Status != acme.StatusPending && authz.Status != acme.StatusProcessing {
 		d.State = domain.Authorized
-		if err := p.db.SaveDomain(d); err != nil {
+		if err := p.bucket.SaveDomain(d); err != nil {
 			return err
 		}
 
@@ -180,7 +180,7 @@ func (p *DomainProcessor) startAuthProcess(c *certificates.Client, d *domain.Dom
 	}
 
 	d.AuthorizationURL = authz.URI
-	if err := p.db.SaveDomain(d); err != nil {
+	if err := p.bucket.SaveDomain(d); err != nil {
 		return err
 	}
 
@@ -197,7 +197,7 @@ func (p *DomainProcessor) startAuthProcess(c *certificates.Client, d *domain.Dom
 	}
 
 	d, err = c.PrepareChallenge(d, chal)
-	if err := p.db.SaveDomain(d); err != nil {
+	if err := p.bucket.SaveDomain(d); err != nil {
 		return err
 	}
 
@@ -211,4 +211,13 @@ func (p *DomainProcessor) startAuthProcess(c *certificates.Client, d *domain.Dom
 	})
 
 	return p.broker.Publish(Authorization, m)
+}
+
+// NewDomainProcessor initializes the domain processor.
+func NewDomainProcessor(bucket storage.Bucket, broker Broker, config *configuration.DomainsConfiguration) *DomainProcessor {
+	return &DomainProcessor{
+		bucket: bucket,
+		broker: broker,
+		config: config,
+	}
 }
